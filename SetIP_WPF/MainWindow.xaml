@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SetIP_WPF"
         mc:Ignorable="d" Loaded="MainWindow_OnLoaded" WindowStyle="ToolWindow"
-        Title="MainWindow" Height="560" Width="540" Background="LightGray" ResizeMode="CanMinimize" >
+        Title="网络设置" Height="560" Width="540" Background="LightGray" ResizeMode="CanMinimize" >
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
