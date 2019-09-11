@@ -28,7 +28,7 @@ namespace SetIP_WPF
 
         private void BtnOpenNetworkConnections_OnClick(object sender, RoutedEventArgs e)
         {
-            var startInfo = new ProcessStartInfo("NCPA.cpl");
+            var startInfo = new ProcessStartInfo("ncpa.cpl");
             startInfo.UseShellExecute = true;
             Process.Start(startInfo);
         }
@@ -43,6 +43,7 @@ namespace SetIP_WPF
 
             btnSet.IsEnabled = false;
             GetNetAdapters();
+
             tbCurrentStatus.Text = "";
             _timer = new Timer(TestConnection, null, 300, 1000);
         }

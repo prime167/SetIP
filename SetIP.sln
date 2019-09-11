@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SetIP", "SetIP\SetIP.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SetIP_WPF", "SetIP_WPF\SetIP_WPF.csproj", "{7235D254-FDEA-4839-A73F-FF5E272D3F4E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SetIP_WPF.Core", "SetIP_WPF.Core\SetIP_WPF.Core.csproj", "{7F6F39CB-7C43-4FDD-B45E-FDA906FE3FEE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{7235D254-FDEA-4839-A73F-FF5E272D3F4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7235D254-FDEA-4839-A73F-FF5E272D3F4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7235D254-FDEA-4839-A73F-FF5E272D3F4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F6F39CB-7C43-4FDD-B45E-FDA906FE3FEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F6F39CB-7C43-4FDD-B45E-FDA906FE3FEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F6F39CB-7C43-4FDD-B45E-FDA906FE3FEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F6F39CB-7C43-4FDD-B45E-FDA906FE3FEE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
