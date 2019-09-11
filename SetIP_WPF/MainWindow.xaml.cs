@@ -6,85 +6,118 @@ using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using Timer = System.Threading.Timer;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Threading;
 
-namespace SetIp
+namespace SetIP_WPF
 {
-    public partial class Form1 : Form
+    public partial class MainWindow : Window
     {
         Timer _timer;
-        private SynchronizationContext _context;
+        private readonly Dispatcher _dispatcher;
         private int _counterSuccess;
         private int _counterFail;
+        static readonly object _locker = new object();
 
-        public Form1()
+        public MainWindow()
         {
             InitializeComponent();
-            _context = SynchronizationContext.Current;
-            _context = _context ?? new SynchronizationContext();
+            _dispatcher = Dispatcher.CurrentDispatcher;
         }
 
-        private async void TestConnection(object obj)
+        private void BtnOpenNetworkConnections_OnClick(object sender, RoutedEventArgs e)
         {
-            // 测试连接
-            var timeOut = TimeSpan.FromMilliseconds(200);
-            var cancellationCompletionSource = new TaskCompletionSource<bool>();
-            try
+            var startInfo = new ProcessStartInfo("NCPA.cpl");
+            startInfo.UseShellExecute = true;
+            Process.Start(startInfo);
+        }
+
+        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            lblIpResult.Content = "";
+            lblSubMaskResult.Content = "";
+            lblGatewayResult.Content = "";
+            lblDns1Result.Content = "";
+            lblDns2Result.Content = "";
+
+            btnSet.IsEnabled = false;
+            GetNetAdapters();
+            tbCurrentStatus.Text = "";
+            _timer = new Timer(TestConnection, null, 300, 1000);
+        }
+
+        private void TestConnection(object obj)
+        {
+            lock (_locker)
             {
-                IPAddress ip;
-                bool b = IPAddress.TryParse(txtDestIp.Text, out ip);
-                if (!b)
+                var r = TestConnection();
+                if (r)
                 {
-                    throw new ArgumentException();
+                    _counterSuccess++;
+                    _dispatcher.BeginInvoke((Action)(() => { tbCurrentStatus.Text = $"连接成功 {_counterSuccess}"; }));
                 }
-
-                var port = Convert.ToInt32(txtPort.Text);
-
-                using (var cts = new CancellationTokenSource(timeOut))
-                {
-                    using (var client = new TcpClient())
-                    {
-                        var task = client.ConnectAsync(ip, port);
-
-                        using (cts.Token.Register(() => cancellationCompletionSource.TrySetResult(true)))
-                        {
-                            if (task != await Task.WhenAny(task, cancellationCompletionSource.Task))
-                            {
-                                throw new OperationCanceledException(cts.Token);
-                            }
-                        }
-
-                        client.Close();
-                        _context.Post(o =>
-                        {
-                            _counterSuccess++;
-                            tbCurrentStatus.Text = "连接成功！" + _counterSuccess;
-                        }, null);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                _context.Post(o =>
+                else
                 {
                     _counterFail++;
-                    tbCurrentStatus.Text = "连接失败 " + _counterFail;
-                }, null);
+                    _dispatcher.BeginInvoke((Action)(() => { tbCurrentStatus.Text = $"连接失败 {_counterFail}"; }));
+                }
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private bool TestConnection()
         {
-            lblIpResult.Text = "";
-            lblSubMaskResult.Text = "";
-            lblGatewayResult.Text = "";
-            lblDns1Result.Text = "";
-            lblDns2Result.Text = "";
+            // 测试连接
+            var timeOut = TimeSpan.FromMilliseconds(60);
+            try
+            {
+                string ips = "";
+                bool r = true;
+                int port = 0;
+                IPAddress ip;
+                _dispatcher.Invoke(() =>
+                {
+                    if (string.IsNullOrEmpty(txtDestIp.Text) || string.IsNullOrEmpty(txtPort.Text))
+                    {
+                        r = false;
+                    }
 
-            btnSet.Enabled = false;
-            GetNetAdapters();
-            _timer = new Timer(TestConnection, null, 0, 1000);
+                    r = IPAddress.TryParse(txtDestIp.Text, out ip);
+                    r = int.TryParse(txtPort.Text, out port);
+
+                    if (ip == null)
+                    {
+                        r = false;
+                    }
+                    else
+                    {
+                        ips = ip.ToString();
+                    }
+                });
+
+                if (r == false)
+                {
+                    return false;
+                }
+
+                var client = new TcpClient();
+                var result = client.BeginConnect(ips, port, null, null);
+
+                var success = result.AsyncWaitHandle.WaitOne(timeOut);
+
+                if (!success)
+                {
+                    return false;
+                }
+
+                client.EndConnect(result);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
         public void GetNetAdapters()
@@ -98,31 +131,7 @@ namespace SetIp
             }
         }
 
-        private void BtnSet_Click(object sender, EventArgs e)
-        {
-            btnSet.Enabled = false;
-            lblIpResult.Text = "";
-            lblSubMaskResult.Text = "";
-            lblGatewayResult.Text = "";
-            lblDns1Result.Text = "";
-            lblDns2Result.Text = "";
-
-            if (string.IsNullOrEmpty(txtIp.Text) || string.IsNullOrEmpty(txtSubMask.Text))
-            {
-                lblIpResult.Text = "不能为空";
-                lblSubMaskResult.Text = "不能为空";
-
-                return;
-            }
-
-            SetIpInfo(lbNic.SelectedItem.ToString(),
-                new[] { txtIp.Text },
-                new[] { txtSubMask.Text }, new[] { txtGateway.Text },
-                new[] { txtPrimaryDns.Text, txtBackupDns.Text });
-            btnSet.Enabled = true;
-        }
-
-        private void LbNic_SelectedIndexChanged(object sender, EventArgs e)
+        private void LbNic_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (lbNic.SelectedItem != null)
             {
@@ -135,17 +144,17 @@ namespace SetIp
                     txtPrimaryDns.Text = "";
                     txtBackupDns.Text = "";
 
-                    GetNetworkConfig(nic); 
-                    btnSet.Enabled = true;
+                    GetNetworkConfig(nic);
+                    btnSet.IsEnabled = true;
                 }
                 else
                 {
-                    btnSet.Enabled = false;
+                    btnSet.IsEnabled = false;
                 }
             }
             else
             {
-                btnSet.Enabled = false;
+                btnSet.IsEnabled = false;
             }
         }
 
@@ -190,9 +199,32 @@ namespace SetIp
             }
         }
 
+        private void BtnSet_OnClick(object sender, RoutedEventArgs e)
+        {
+            btnSet.IsEnabled = false;
+            lblIpResult.Content = "";
+            lblSubMaskResult.Content = "";
+            lblGatewayResult.Content = "";
+            lblDns1Result.Content = "";
+            lblDns2Result.Content = "";
+
+            if (string.IsNullOrEmpty(txtIp.Text) || string.IsNullOrEmpty(txtSubMask.Text))
+            {
+                lblIpResult.Content = "不能为空";
+                lblSubMaskResult.Content = "不能为空";
+
+                return;
+            }
+
+            SetIpInfo(lbNic.SelectedItem.ToString(),
+                new[] { txtIp.Text },
+                new[] { txtSubMask.Text }, new[] { txtGateway.Text },
+                new[] { txtPrimaryDns.Text, txtBackupDns.Text });
+            btnSet.IsEnabled = true;
+        }
+
         protected void SetIpInfo(string nic, string[] ip, string[] submask, string[] gateway, string[] dns)
         {
-            string str = "";
             ManagementBaseObject inPar = null;
             ManagementBaseObject outPar = null;
             var mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
@@ -202,6 +234,7 @@ namespace SetIp
                 if (!(bool)mo["IPEnabled"]) continue;
                 if (mo["Caption"].ToString().Contains(nic))
                 {
+                    string str;
                     if (ip != null && submask != null)
                     {
                         inPar = mo.GetMethodParameters("EnableStatic");
@@ -211,13 +244,13 @@ namespace SetIp
                         str = outPar["returnvalue"].ToString();
                         if (str == "0" || str == "1")
                         {
-                            lblIpResult.Text = "成功";
-                            lblSubMaskResult.Text = "成功";
+                            lblIpResult.Content = "成功";
+                            lblSubMaskResult.Content = "成功";
                         }
                         else
                         {
-                            lblIpResult.Text = "失败";
-                            lblSubMaskResult.Text = "失败";
+                            lblIpResult.Content = "失败";
+                            lblSubMaskResult.Content = "失败";
                         }
                         //获取操作设置IP的返回值， 可根据返回值去确认IP是否设置成功。 0或1表示成功 
                         // 返回值说明网址： https://msdn.microsoft.com/en-us/library/aa393301(v=vs.85).aspx
@@ -231,11 +264,11 @@ namespace SetIp
                         str = outPar["returnvalue"].ToString();
                         if (str == "0" || str == "1")
                         {
-                            lblGatewayResult.Text = "成功";
+                            lblGatewayResult.Content = "成功";
                         }
                         else
                         {
-                            lblGatewayResult.Text = "失败";
+                            lblGatewayResult.Content = "失败";
                         }
                     }
 
@@ -247,33 +280,26 @@ namespace SetIp
                         str = outPar["returnvalue"].ToString();
                         if (str == "0" || str == "1")
                         {
-                            lblDns1Result.Text = "成功";
-                            lblDns2Result.Text = "成功";
+                            lblDns1Result.Content = "成功";
+                            lblDns2Result.Content = "成功";
                         }
                         else
                         {
-                            lblDns1Result.Text = "失败";
-                            lblDns2Result.Text = "失败";
+                            lblDns1Result.Content = "失败";
+                            lblDns2Result.Content = "失败";
                         }
                     }
                 }
             }
         }
 
-        private void BtnOpenNetworkConnections_Click(object sender, EventArgs e)
-        {
-            var startInfo = new ProcessStartInfo("NCPA.cpl");
-            startInfo.UseShellExecute = true;
-            Process.Start(startInfo);
-        }
-
-        private void LnklblBaidu_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void Hlb_OnClick(object sender, RoutedEventArgs e)
         {
             txtDestIp.Text = "182.61.200.6";
             txtPort.Text = "80";
         }
 
-        private void LnklblGoogle_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void Hlg_OnClick(object sender, RoutedEventArgs e)
         {
             txtDestIp.Text = "74.125.236.199";
             txtPort.Text = "80";

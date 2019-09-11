@@ -51,6 +51,8 @@
             this.lblDns1Result = new System.Windows.Forms.Label();
             this.lblDns2Result = new System.Windows.Forms.Label();
             this.btnOpenNetworkConnections = new System.Windows.Forms.Button();
+            this.lnklblBaidu = new System.Windows.Forms.LinkLabel();
+            this.lnklblGoogle = new System.Windows.Forms.LinkLabel();
             this.SuspendLayout();
             // 
             // txtDestIp
@@ -67,7 +69,7 @@
             this.txtPort.Name = "txtPort";
             this.txtPort.Size = new System.Drawing.Size(100, 21);
             this.txtPort.TabIndex = 2;
-            this.txtPort.Text = "10001";
+            this.txtPort.Text = "80";
             // 
             // tbCurrentStatus
             // 
@@ -251,11 +253,35 @@
             this.btnOpenNetworkConnections.UseVisualStyleBackColor = true;
             this.btnOpenNetworkConnections.Click += new System.EventHandler(this.BtnOpenNetworkConnections_Click);
             // 
+            // lnklblBaidu
+            // 
+            this.lnklblBaidu.AutoSize = true;
+            this.lnklblBaidu.Location = new System.Drawing.Point(278, 369);
+            this.lnklblBaidu.Name = "lnklblBaidu";
+            this.lnklblBaidu.Size = new System.Drawing.Size(35, 12);
+            this.lnklblBaidu.TabIndex = 25;
+            this.lnklblBaidu.TabStop = true;
+            this.lnklblBaidu.Text = "baidu";
+            this.lnklblBaidu.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LnklblBaidu_LinkClicked);
+            // 
+            // lnklblGoogle
+            // 
+            this.lnklblGoogle.AutoSize = true;
+            this.lnklblGoogle.Location = new System.Drawing.Point(319, 369);
+            this.lnklblGoogle.Name = "lnklblGoogle";
+            this.lnklblGoogle.Size = new System.Drawing.Size(41, 12);
+            this.lnklblGoogle.TabIndex = 26;
+            this.lnklblGoogle.TabStop = true;
+            this.lnklblGoogle.Text = "google";
+            this.lnklblGoogle.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LnklblGoogle_LinkClicked);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(562, 484);
+            this.Controls.Add(this.lnklblGoogle);
+            this.Controls.Add(this.lnklblBaidu);
             this.Controls.Add(this.btnOpenNetworkConnections);
             this.Controls.Add(this.lblDns2Result);
             this.Controls.Add(this.lblDns1Result);
@@ -311,6 +337,8 @@
         private System.Windows.Forms.Label lblDns1Result;
         private System.Windows.Forms.Label lblDns2Result;
         private System.Windows.Forms.Button btnOpenNetworkConnections;
+        private System.Windows.Forms.LinkLabel lnklblBaidu;
+        private System.Windows.Forms.LinkLabel lnklblGoogle;
     }
 }
 
