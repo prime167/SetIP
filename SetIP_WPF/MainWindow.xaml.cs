@@ -18,7 +18,7 @@ namespace SetIP_WPF
         private readonly Dispatcher _dispatcher;
         private int _counterSuccess;
         private int _counterFail;
-        static readonly object _locker = new object();
+        static readonly object Locker = new object();
 
         public MainWindow()
         {
@@ -49,9 +49,9 @@ namespace SetIP_WPF
 
         private void TestConnection(object obj)
         {
-            lock (_locker)
+            lock (Locker)
             {
-                var r = TestConnection();
+                bool r = TestConnection();
                 if (r)
                 {
                     _counterSuccess++;
@@ -191,9 +191,9 @@ namespace SetIP_WPF
                         txtPrimaryDns.Text = ips.DnsAddresses[0].ToString(); //主DNS
                         txtBackupDns.Text = ips.DnsAddresses[1].ToString(); //备用DNS地址
                     }
-                    catch (Exception er)
+                    catch (Exception ex)
                     {
-                        //throw er;
+                        //throw ex;
                     }
                 }
             }
@@ -225,8 +225,6 @@ namespace SetIP_WPF
 
         protected void SetIpInfo(string nic, string[] ip, string[] submask, string[] gateway, string[] dns)
         {
-            ManagementBaseObject inPar = null;
-            ManagementBaseObject outPar = null;
             var mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
             ManagementObjectCollection moc = mc.GetInstances();
             foreach (ManagementObject mo in moc)
@@ -235,6 +233,8 @@ namespace SetIP_WPF
                 if (mo["Caption"].ToString().Contains(nic))
                 {
                     string str;
+                    ManagementBaseObject inPar;
+                    ManagementBaseObject outPar;
                     if (ip != null && submask != null)
                     {
                         inPar = mo.GetMethodParameters("EnableStatic");
