@@ -7,24 +7,24 @@
     <RootNamespace>SetIP_WPF</RootNamespace>
     <AssemblyName>SetIP</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <PublishSingleFile>true</PublishSingleFile>
-    <PublishTrimmed>true</PublishTrimmed>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <!--<PublishSingleFile>true</PublishSingleFile>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishReadyToRun>true</PublishReadyToRun>-->
   </PropertyGroup>
-<ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="..\SetIP_WPF\App.xaml" Link="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </ApplicationDefinition>
+  </ItemGroup>
 
-  <ApplicationDefinition Include="..\SetIP_WPF\App.xaml" Link="App.xaml">
-    <Generator>MSBuild:Compile</Generator>
-  </ApplicationDefinition>
-</ItemGroup>
- 
-<ItemGroup>
-  <Page Include="..\SetIP_WPF\MainWindow.xaml" Link="MainWindow.xaml">
-    <Generator>MSBuild:Compile</Generator>
-  </Page>
-  <Compile Include="..\SetIP_WPF\MainWindow.xaml.cs" Link="MainWindow.xaml.cs" />
-</ItemGroup>
+  <ItemGroup>
+    <Page Include="..\SetIP_WPF\MainWindow.xaml" Link="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Compile Include="..\SetIP_WPF\MainWindow.xaml.cs" Link="MainWindow.xaml.cs" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Management" Version="4.5.0" />
   </ItemGroup>
