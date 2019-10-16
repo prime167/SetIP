@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Management;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -296,8 +297,19 @@ namespace SetIP_WPF
 
         private void Hlb_OnClick(object sender, RoutedEventArgs e)
         {
-            txtDestIp.Text = "182.61.200.6";
-            txtPort.Text = "80";
+            try
+            {
+                var address = Dns.GetHostEntry("www.baidu.com").AddressList;
+                if (address.Any())
+                {
+                    txtDestIp.Text = address[0].ToString();
+                    txtPort.Text = "80";
+                }
+            }
+            catch (Exception exception)
+            {
+                txtDestIp.Text = "获取IP地址失败!";
+            }
         }
 
         private void Hlg_OnClick(object sender, RoutedEventArgs e)
